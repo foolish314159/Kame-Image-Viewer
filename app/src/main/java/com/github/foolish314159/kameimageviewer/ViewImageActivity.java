@@ -1,18 +1,27 @@
 package com.github.foolish314159.kameimageviewer;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Toast;
 
-import uk.co.senab.photoview.PhotoViewAttacher;
+import pl.droidsonroids.gif.GifDrawable;
 
 
-public class ViewImageActivity extends AppCompatActivity {
+public class ViewImageActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback, ImageLoader.ImageLoaderListener {
 
     /**
      * Whether or not the system UI should be auto-hidden after
@@ -94,7 +103,9 @@ public class ViewImageActivity extends AppCompatActivity {
         }
     }
 
-    private PhotoViewAttacher mAttacher;
+    private ImagePagerAdapter pagerAdapter;
+
+    private static final int REQUEST_READ_PERMISSION_CODE = 123;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,9 +117,18 @@ public class ViewImageActivity extends AppCompatActivity {
         mControlsView = findViewById(R.id.fullscreen_content_controls);
         mContentView = (ViewPager) findViewById(R.id.activity_view_image_content);
         mContentView.setOffscreenPageLimit(1);
-        mContentView.setAdapter(new ImagePagerAdapter(this));
 
-        //mAttacher = new PhotoViewAttacher(mContentView);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                pagerAdapter = new ImagePagerAdapter(getSupportFragmentManager(), this, Environment.getExternalStorageDirectory());
+                mContentView.setAdapter(pagerAdapter);
+            } else {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_READ_PERMISSION_CODE);
+            }
+        } else {
+            pagerAdapter = new ImagePagerAdapter(getSupportFragmentManager(), this, Environment.getExternalStorageDirectory());
+            mContentView.setAdapter(pagerAdapter);
+        }
 
         // Set up the user interaction to manually show or hide the system UI.
         mTapGestureDetector = new GestureDetectorCompat(this, new TapGestureListener());
@@ -124,6 +144,18 @@ public class ViewImageActivity extends AppCompatActivity {
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
         findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == REQUEST_READ_PERMISSION_CODE) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                pagerAdapter = new ImagePagerAdapter(getSupportFragmentManager(), this, Environment.getExternalStorageDirectory());
+                mContentView.setAdapter(pagerAdapter);
+            }
+        }
     }
 
     @Override
@@ -180,4 +212,61 @@ public class ViewImageActivity extends AppCompatActivity {
         mHideHandler.removeCallbacks(mHideRunnable);
         mHideHandler.postDelayed(mHideRunnable, delayMillis);
     }
+
+    @Override
+    public void imageAvailable(String forPath, final Bitmap image) {
+        Fragment currentFragment = pagerAdapter.getFragment(forPath);
+
+        if (currentFragment instanceof ImageFragment) {
+            final ImageFragment imageFragment = (ImageFragment) currentFragment;
+            if (forPath.equals(imageFragment.getPath())) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        imageFragment.setBitmap(image);
+                    }
+                });
+            }
+        }
+    }
+
+    @Override
+    public void imageThumbnailAvailable(String forPath, final Bitmap image) {
+        Fragment currentFragment = pagerAdapter.getFragment(forPath);
+
+        if (currentFragment instanceof ImageFragment) {
+            final ImageFragment imageFragment = (ImageFragment) currentFragment;
+            if (forPath.equals(imageFragment.getPath())) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        imageFragment.setBitmap(image);
+                    }
+                });
+            }
+        }
+    }
+
+    @Override
+    public void gifAvailable(String forPath, final GifDrawable gif) {
+        Fragment currentFragment = pagerAdapter.getFragment(forPath);
+
+        if (currentFragment instanceof GifFragment) {
+            final GifFragment imageFragment = (GifFragment) currentFragment;
+            if (forPath.equals(imageFragment.getPath())) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        imageFragment.setGifDrawable(gif);
+                    }
+                });
+            }
+        }
+    }
+
+    @Override
+    public void loadFailed(String forPath) {
+        Toast.makeText(this, "Could not load file " + forPath, Toast.LENGTH_SHORT).show();
+    }
+
 }
