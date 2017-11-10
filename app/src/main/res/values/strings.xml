@@ -2,9 +2,12 @@
     <string name="app_name">Kame Image Viewer</string>
 
     <string name="title_activity_view_image">Kame Image Viewer</string>
-    <string name="dummy_button">Dummy Button</string>
+    <string name="button_open_folder">Open</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="textView_image_count">%1$s/%2$s</string>
+    <string name="button_random_image">Random</string>
+    <string name="button_slideshow">Slideshow</string>
+    <string name="button_folder_previous">&lt;</string>
+    <string name="button_folder_next">&gt;</string>
 </resources>

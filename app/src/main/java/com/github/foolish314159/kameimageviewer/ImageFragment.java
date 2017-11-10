@@ -1,39 +1,43 @@
 package com.github.foolish314159.kameimageviewer;
 
-import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.github.chrisbanes.photoview.PhotoView;
+import com.github.piasy.biv.indicator.progresspie.ProgressPieIndicator;
+import com.github.piasy.biv.view.BigImageView;
+
 
 public class ImageFragment extends Fragment {
 
-    private PhotoView photoView;
+    private BigImageView photoView;
     private String path;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        path = getArguments().getString(ImagePagerAdapter.ARGUMENT_PATH);
-
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_image, container, false);
 
-        photoView = (PhotoView) rootView.findViewById(R.id.fragment_image_photoView);
+        photoView = (BigImageView) rootView.findViewById(R.id.fragment_image_photoView);
+        photoView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FragmentActivity activity = getActivity();
+                if (activity instanceof ViewImageActivity) {
+                    ((ViewImageActivity) activity).performContentClick();
+                }
+            }
+        });
+
+        path = getArguments().getString(ImagePagerAdapter.ARGUMENT_PATH);
+        photoView.setProgressIndicator(new ProgressPieIndicator());
+        photoView.showImage(Uri.parse(path));
 
         return rootView;
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public void setBitmap(Bitmap bitmap) {
-        if (photoView != null) {
-            photoView.setImageBitmap(bitmap);
-        }
     }
 
 }

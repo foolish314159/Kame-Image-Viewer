@@ -1,13 +1,18 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             xmlns:tools="http://schemas.android.com/tools"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent"
-             tools:context="com.github.foolish314159.kameimageviewer.ImageFragment">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.github.foolish314159.kameimageviewer.ImageFragment">
 
-    <com.github.chrisbanes.photoview.PhotoView
+    <com.github.piasy.biv.view.BigImageView
         android:id="@+id/fragment_image_photoView"
-        android:background="@android:color/black"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:background="@android:color/black"
+        app:failureImage="@android:drawable/ic_dialog_info"
+        app:failureImageInitScaleType="center"
+        app:initScaleType="centerInside"
+        app:optimizeDisplay="true" />
 
 </FrameLayout>
