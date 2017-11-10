@@ -29,7 +29,9 @@ public class ImagePagerAdapter extends FragmentStatePagerAdapter {
     public static final String ARGUMENT_PATH = "ImagePagerAdapterArgumentPath";
 
     private List<File> files;
+    private List<File> favourites;
     private ImageListener listener = null;
+    private boolean showFavourites = false;
 
     private SparseArray<WeakReference<Fragment>> fragments = new SparseArray<>();
 
@@ -41,6 +43,7 @@ public class ImagePagerAdapter extends FragmentStatePagerAdapter {
         }
 
         files = new ArrayList<>();
+        favourites = new ArrayList<>();
 
         Thread t = new Thread(new Runnable() {
             @Override
@@ -93,37 +96,67 @@ public class ImagePagerAdapter extends FragmentStatePagerAdapter {
         return result;
     }
 
+    public boolean getShowFavourites() {
+        return showFavourites;
+    }
+
+    public void setShowFavourites(boolean showFavourites) {
+        this.showFavourites = showFavourites;
+    }
+
+    public void addFavourite(int index) {
+        favourites.add(files.get(index));
+        notifyDataSetChanged();
+    }
+
+    public void delFavourite(int index) {
+        favourites.remove(index);
+        notifyDataSetChanged();
+    }
+
     public int nextFolderIndex(int current, boolean reverse) {
-        if (files == null || files.size() == 0 || current >= files.size() || current < 1) {
+        List<File> folder = showFavourites ? favourites : files;
+
+        if (folder == null || folder.size() == 0 || current > folder.size() || current < 0) {
             return 0;
         }
 
-        int step = reverse ? -1 : 1;
-        int startIndex = reverse ? current - 1 : current + 1;
-
-        String currentFolder = files.get(current).getParent();
-        for (int i = startIndex; i < files.size(); i += step) {
-            String folder = files.get(i).getParent();
-            if (!currentFolder.equals(folder)) {
-                return i;
+        String currentFolder = folder.get(current).getParent();
+        if (reverse) {
+            for (int i = current - 1; i > 0; i--) {
+                String folderName = folder.get(i).getParent();
+                if (!currentFolder.equals(folderName)) {
+                    return i;
+                }
+            }
+        } else {
+            for (int i = current + 1; i < folder.size(); i++) {
+                String folderName = folder.get(i).getParent();
+                if (!currentFolder.equals(folderName)) {
+                    return i;
+                }
             }
         }
 
-        return startIndex;
+        return current;
     }
 
     public int randomIndex() {
-        if (files == null || files.size() == 0) {
+        List<File> folder = showFavourites ? favourites : files;
+
+        if (folder == null || folder.size() == 0) {
             return 0;
         }
 
         Random rand = new Random();
-        return rand.nextInt(files.size());
+        return rand.nextInt(folder.size());
     }
 
     @Override
     public Fragment getItem(int position) {
-        File currentFile = files.get(position);
+        List<File> folder = showFavourites ? favourites : files;
+
+        File currentFile = folder.get(position);
 
         Fragment fragment = null;
         if (currentFile.getName().toLowerCase().endsWith(".gif")) {
@@ -154,6 +187,7 @@ public class ImagePagerAdapter extends FragmentStatePagerAdapter {
 
     @Override
     public int getCount() {
-        return files.size();
+        List<File> folder = showFavourites ? favourites : files;
+        return folder.size();
     }
 }

@@ -71,6 +71,9 @@ class ViewImageActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissio
     }
 
     private var pagerAdapter: ImagePagerAdapter? = null
+    private var showFavourites = false
+    private var currentFavourite = 0;
+    private var currentIndex = 0;
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -127,6 +130,16 @@ class ViewImageActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissio
             goToNextPage(false)
         }
 
+        buttonAddDelFavourite.setOnTouchListener(mDelayHideTouchListener)
+        buttonAddDelFavourite.setOnClickListener {
+            addDelFavourite()
+        }
+
+        buttonFavourite.setOnTouchListener(mDelayHideTouchListener)
+        buttonFavourite.setOnClickListener {
+            toggleFavourites()
+        }
+
         buttonRandomImage.setOnTouchListener(mDelayHideTouchListener)
         buttonRandomImage.setOnClickListener {
             selectRandomPage()
@@ -135,6 +148,31 @@ class ViewImageActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissio
         buttonSlideshow.setOnTouchListener(mDelayHideTouchListener)
         buttonSlideshow.setOnClickListener {
             slideshow()
+        }
+    }
+
+    private fun addDelFavourite() {
+        mContentView?.currentItem?.let {
+            when (showFavourites) {
+                true -> pagerAdapter?.delFavourite(it)
+                false -> pagerAdapter?.addFavourite(it)
+            }
+        }
+    }
+
+    private fun toggleFavourites() {
+        showFavourites = !showFavourites
+        pagerAdapter?.showFavourites = showFavourites
+        pagerAdapter?.notifyDataSetChanged()
+
+        if (showFavourites) {
+            buttonAddDelFavourite.setText(R.string.button_del_favourite)
+            indexChanged(currentFavourite, pagerAdapter?.count ?: 0)
+            mContentView?.setCurrentItem(currentFavourite, false)
+        } else {
+            buttonAddDelFavourite.setText(R.string.button_add_favourite)
+            indexChanged(currentIndex, pagerAdapter?.count ?: 0)
+            mContentView?.setCurrentItem(currentIndex, false)
         }
     }
 
@@ -212,6 +250,12 @@ class ViewImageActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissio
     override fun onPageSelected(position: Int) {
         val index = position + 1
         textViewImageCount.text = getString(R.string.textView_image_count, "$index", "$pageCount")
+
+        if (showFavourites) {
+            currentFavourite = position
+        } else {
+            currentIndex = position
+        }
 
         if (AUTO_HIDE) {
             delayedHide(AUTO_HIDE_DELAY_MILLIS)

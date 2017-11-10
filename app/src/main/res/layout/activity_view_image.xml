@@ -59,6 +59,22 @@
                 android:text="@string/button_folder_next" />
 
             <Button
+                android:id="@+id/buttonAddDelFavourite"
+                style="?metaButtonBarButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/button_add_favourite" />
+
+            <Button
+                android:id="@+id/buttonFavourite"
+                style="?metaButtonBarButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/button_favourite" />
+
+            <Button
                 android:id="@+id/buttonRandomImage"
                 style="?metaButtonBarButtonStyle"
                 android:layout_width="0dp"
